@@ -110,6 +110,7 @@ public class SavedObjectInputStream extends FilterInputStream{
 		if(owningObject != null){
 			for(Field field : ReflectiveIoUtils.getAllFields(clazz, s -> s.getDeclaredAnnotation(FillWithOwner.class) != null)){
 				if(field.getType().isInstance(owningObject)){ // a class may have multiple possible owners
+					if(!field.isAccessible()) field.setAccessible(true);
 					field.set(object, owningObject);
 				}
 			}
@@ -122,11 +123,6 @@ public class SavedObjectInputStream extends FilterInputStream{
 			}
 			short savedVersion = readVersions.get(field.getDeclaringClass().getName());
 			SavedProperty fieldAnnotation = field.getAnnotation(SavedProperty.class);
-			if(fieldAnnotation != null){
-				if(fieldAnnotation.value() <= savedVersion && (savedVersion < fieldAnnotation.removed() || fieldAnnotation.removed() == SavedProperty.VERSION_NIL)){
-
-				}
-			}
 			if(fieldAnnotation != null && fieldAnnotation.value() <= savedVersion &&
 					(savedVersion < fieldAnnotation.removed() || fieldAnnotation.removed() == SavedProperty.VERSION_NIL)){
 				readField(field, object);
